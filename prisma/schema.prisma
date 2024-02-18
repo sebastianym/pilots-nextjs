@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  password    String
+  admin       Boolean      @default(false)
+  userCourses UserCourse[]
+  userTests   UserTest[]
+}
+
+model Course {
+  id              Int              @id @default(autoincrement())
+  name            String
+  userCourses     UserCourse[]
+  courseTests     CourseTest[]
+}
+
+model Question {
+  id              Int              @id @default(autoincrement())
+  text            String
+  answer1         String
+  answer2         String
+  answer3         String
+  correctAnswer   Int
+  testQuestions   TestQuestion[]
+}
+
+model Test {
+  id              Int              @id @default(autoincrement())
+  name            String
+  duration        Int
+  testQuestions   TestQuestion[]
+  userTests       UserTest[]
+  courseTests     CourseTest[]
+}
+
+model UserCourse {
+  userId    Int
+  courseId  Int
+  user      User    @relation(fields: [userId], references: [id])
+  course    Course  @relation(fields: [courseId], references: [id])
+
+  @@id([userId, courseId])
+}
+
+model TestQuestion {
+  testId     Int
+  questionId Int
+  test       Test     @relation(fields: [testId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+
+  @@id([testId, questionId])
+}
+
+model UserTest {
+  userId      Int
+  testId      Int
+  successRate Float?
+  user        User  @relation(fields: [userId], references: [id])
+  test        Test  @relation(fields: [testId], references: [id])
+
+  @@id([userId, testId])
+}
+
+model CourseTest {
+  courseId  Int
+  testId    Int
+  course    Course  @relation(fields: [courseId], references: [id])
+  test      Test    @relation(fields: [testId], references: [id])
+
+  @@id([courseId, testId])
+}
